@@ -1,180 +1,19 @@
-/* 上品で洗練されたラグジュアリーデザイン */
-:root {
-    --primary-dark: #1a1a1a;
-    --primary-gold: #c9a961;
-    --accent-gold: #f0e6d2;
-    --text-primary: #2c2c2c;
-    --text-secondary: #666666;
-    --bg-primary: #ffffff;
-    --bg-secondary: #fafafa;
-    --bg-card: #ffffff;
-    --border-light: #e5e5e5;
-    --border-gold: rgba(201, 169, 97, 0.3);
-    --shadow-soft: 0 2px 8px rgba(0, 0, 0, 0.06);
-    --shadow-medium: 0 4px 16px rgba(0, 0, 0, 0.08);
-    --shadow-gold: 0 4px 16px rgba(201, 169, 97, 0.1);
-}
+/* ASTORIA - Luxury Night Club Style */
+
+/* カスタムフォント */
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700&display=swap');
 
 /* ベーススタイル */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
 body {
-    font-family: 'Noto Sans JP', -apple-system, 'Helvetica Neue', sans-serif;
+    font-family: 'Noto Sans JP', -apple-system, BlinkMacSystemFont, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    background: var(--bg-secondary);
-    color: var(--text-primary);
-    line-height: 1.6;
-    font-weight: 400;
-}
-
-/* 上品なカード */
-.luxury-card {
-    background: var(--bg-card);
-    border: 1px solid var(--border-light);
-    border-radius: 12px;
-    padding: 24px;
-    box-shadow: var(--shadow-soft);
-    transition: all 0.3s ease;
-}
-
-.luxury-card:hover {
-    box-shadow: var(--shadow-medium);
-    transform: translateY(-2px);
-}
-
-/* プレミアムカード（アクセント） */
-.luxury-card-gold {
-    background: linear-gradient(135deg, #ffffff 0%, #fdfbf7 100%);
-    border: 1px solid var(--border-gold);
-    box-shadow: var(--shadow-gold);
-}
-
-/* タイトル */
-.luxury-title {
-    color: var(--text-primary);
-    font-weight: 600;
-    letter-spacing: 0.5px;
-}
-
-.luxury-title-gold {
-    background: linear-gradient(135deg, var(--primary-gold), #b8941f);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    font-weight: 700;
-}
-
-/* ボタン */
-.btn-gold {
-    background: linear-gradient(135deg, var(--primary-gold), #b8941f);
-    color: white;
-    border: none;
-    border-radius: 8px;
-    padding: 10px 20px;
-    font-weight: 500;
-    letter-spacing: 0.3px;
-    box-shadow: 0 2px 8px rgba(201, 169, 97, 0.3);
-    transition: all 0.3s ease;
-    cursor: pointer;
-}
-
-.btn-gold:hover {
-    background: linear-gradient(135deg, #d4b56c, var(--primary-gold));
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(201, 169, 97, 0.4);
-}
-
-.btn-secondary {
-    background: white;
-    color: var(--text-primary);
-    border: 1px solid var(--border-light);
-    border-radius: 8px;
-    padding: 10px 20px;
-    font-weight: 500;
-    transition: all 0.3s ease;
-    cursor: pointer;
-}
-
-.btn-secondary:hover {
-    background: var(--bg-secondary);
-    border-color: var(--primary-gold);
-    color: var(--primary-gold);
-}
-
-.btn-secondary.active {
-    background: var(--primary-dark);
-    color: white;
-    border-color: var(--primary-dark);
-}
-
-/* 入力フィールド */
-.luxury-input,
-input,
-select,
-textarea {
-    background: white;
-    border: 1px solid var(--border-light);
-    border-radius: 8px;
-    padding: 10px 14px;
-    color: var(--text-primary);
-    font-size: 14px;
-    transition: all 0.3s ease;
-}
-
-input:focus,
-select:focus,
-textarea:focus {
-    outline: none;
-    border-color: var(--primary-gold);
-    box-shadow: 0 0 0 3px rgba(201, 169, 97, 0.1);
-}
-
-input::placeholder,
-textarea::placeholder {
-    color: #999;
-}
-
-/* テーブル */
-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-thead {
-    background: var(--bg-secondary);
-    border-bottom: 2px solid var(--border-light);
-}
-
-th {
-    padding: 12px;
-    text-align: left;
-    font-weight: 600;
-    color: var(--text-secondary);
-    font-size: 13px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-td {
-    padding: 12px;
-    border-bottom: 1px solid var(--border-light);
-    color: var(--text-primary);
-}
-
-tbody tr:hover {
-    background: var(--bg-secondary);
-}
-
-/* バッジ */
-.luxury-badge {
-    display: inline-flex;
-    align-items: center;
-    padding: 4px 10px;
-    background: var(--accent-gold);
-    color: var(--primary-gold);
-    border-radius: 4px;
-    font-size: 12px;
-    font-weight: 600;
-    letter-spacing: 0.3px;
 }
 
 /* スクロールバー */
@@ -184,118 +23,152 @@ tbody tr:hover {
 }
 
 ::-webkit-scrollbar-track {
-    background: var(--bg-secondary);
+    background: rgba(255, 255, 255, 0.05);
     border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb {
-    background: #d0d0d0;
+    background: rgba(198, 163, 94, 0.3);
     border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: #b0b0b0;
+    background: rgba(198, 163, 94, 0.5);
 }
 
-/* ヘッダー */
-.luxury-header {
-    background: white;
-    border-bottom: 1px solid var(--border-light);
-    padding: 20px 0;
-    margin-bottom: 30px;
+/* グラデーションボタン */
+.btn-gold-gradient {
+    background: linear-gradient(180deg, #d7bd82, #C6A35E);
+    color: #1b0f12;
+    font-weight: 600;
+    transition: all 0.3s ease;
 }
 
-.logo-mark {
-    width: 40px;
-    height: 40px;
-    background: var(--primary-dark);
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--primary-gold);
-    font-weight: bold;
-    font-size: 18px;
+.btn-gold-gradient:hover {
+    background: linear-gradient(180deg, #e6cc91, #d7b46f);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(198, 163, 94, 0.3);
 }
 
-/* アニメーション */
-.fade-in {
-    animation: fadeIn 0.3s ease-in;
+/* パネル効果 */
+.panel-dark {
+    background: rgba(27, 15, 18, 0.9);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* テキストグロー */
+.text-glow-gold {
+    text-shadow: 0 0 20px rgba(198, 163, 94, 0.3);
+}
+
+/* トースト通知 */
+.toast-enter {
+    animation: slideInRight 0.3s ease-out;
+}
+
+.toast-exit {
+    animation: slideOutRight 0.3s ease-out;
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOutRight {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}
+
+/* モーダル */
+.modal-backdrop {
+    animation: fadeIn 0.2s ease-out;
+}
+
+.modal-content {
+    animation: scaleIn 0.2s ease-out;
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
-.fade-in-up {
-    animation: fadeInUp 0.4s ease-out;
-}
-
-@keyframes fadeInUp {
     from {
         opacity: 0;
-        transform: translateY(10px);
     }
     to {
         opacity: 1;
-        transform: translateY(0);
     }
 }
 
-/* プログレスバー */
-.progress-bar {
-    background: var(--bg-secondary);
-    border-radius: 4px;
-    overflow: hidden;
-    height: 6px;
-}
-
-.progress-fill {
-    background: linear-gradient(90deg, var(--primary-gold), #d4b56c);
-    height: 100%;
-    border-radius: 4px;
-    transition: width 0.3s ease;
-}
-
-/* 高級感のある区切り線 */
-.luxury-divider {
-    height: 1px;
-    background: linear-gradient(90deg, transparent, var(--border-gold), transparent);
-    margin: 20px 0;
-}
-
-/* ステータス表示 */
-.status-open {
-    color: #22c55e;
-    font-weight: 600;
-}
-
-.status-closed {
-    color: var(--text-secondary);
-}
-
-/* 価格表示 */
-.price-display {
-    font-family: 'SF Mono', 'Monaco', monospace;
-    font-weight: 600;
-    color: var(--text-primary);
-}
-
-.price-total {
-    font-size: 24px;
-    color: var(--primary-gold);
-    font-weight: 700;
-}
-
-/* レスポンシブ */
-@media (max-width: 768px) {
-    .luxury-card {
-        padding: 16px;
+@keyframes scaleIn {
+    from {
+        transform: scale(0.95);
+        opacity: 0;
     }
-    
-    th, td {
-        padding: 8px;
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* テーブルスタイル */
+.receipt-table {
+    background: white;
+    color: black;
+}
+
+.receipt-table thead {
+    border-bottom: 2px solid #e5e5e5;
+}
+
+.receipt-table tbody tr {
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.receipt-table tbody tr:last-child {
+    border-bottom: none;
+}
+
+/* ホバー効果 */
+.hover-lift {
+    transition: all 0.2s ease;
+}
+
+.hover-lift:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* タブアクティブ状態 */
+.tab-active {
+    color: #f59e0b;
+    border-bottom: 2px solid #f59e0b;
+}
+
+/* 入力フィールド */
+input:focus,
+select:focus,
+textarea:focus {
+    outline: none;
+    border-color: rgba(198, 163, 94, 0.5);
+    box-shadow: 0 0 0 3px rgba(198, 163, 94, 0.1);
+}
+
+/* レスポンシブ調整 */
+@media (max-width: 1024px) {
+    .sidebar {
+        display: none;
     }
 }
 
@@ -303,14 +176,15 @@ tbody tr:hover {
 @media print {
     body {
         background: white;
-    }
-    
-    .luxury-card {
-        box-shadow: none;
-        border: 1px solid #ddd;
+        color: black;
     }
     
     .no-print {
         display: none !important;
+    }
+    
+    .panel-dark {
+        background: white;
+        border: 1px solid #ddd;
     }
 }

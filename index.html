@@ -3,10 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Night+ 会計システム</title>
+    <title>ASTORIA - Night Club POS System</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        wine: {
+                            900: '#12090c',
+                            800: '#1b0f12',
+                            700: '#2a1a1f',
+                            600: '#3d252b'
+                        },
+                        gold: {
+                            DEFAULT: '#C6A35E',
+                            light: '#d7bd82'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
     
     <!-- React & ReactDOM -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
@@ -15,7 +35,7 @@
     <!-- Custom CSS -->
     <link rel="stylesheet" href="style.css">
 </head>
-<body class="bg-gray-100">
+<body class="bg-wine-900 text-stone-100 antialiased">
     <div id="root"></div>
     
     <!-- Application JavaScript -->
