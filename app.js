@@ -394,10 +394,12 @@ function TicketEntry() {
   const [menu] = useState(() => loadLS(LS_KEYS.MENU, defaultMenu));
   const [tickets, setTickets] = useState(() => loadLS(LS_KEYS.TICKETS, []));
   const [staff] = useState(() => loadLS(LS_KEYS.STAFF, defaultStaff));
+  const [openTickets, setOpenTickets] = useState([]);
+  const [currentTicketId, setCurrentTicketId] = useState(null);
   
   useEffect(() => saveLS(LS_KEYS.TICKETS, tickets), [tickets]);
 
-  const base = {
+  const createNewTicket = () => ({
     id: uid(),
     date: todayISO(),
     customer: "",
@@ -409,9 +411,53 @@ function TicketEntry() {
     discount: 0,
     memo: "",
     status: "open",
-  };
+  });
   
-  const [draft, setDraft] = useState(base);
+  const [draft, setDraft] = useState(createNewTicket());
+
+  // 新規伝票作成
+  const createTicket = () => {
+    const newTicket = createNewTicket();
+    setOpenTickets(prev => [...prev, newTicket]);
+    setDraft(newTicket);
+    setCurrentTicketId(newTicket.id);
+  };
+
+  // 伝票切り替え
+  const switchTicket = (ticketId) => {
+    // 現在の伝票を保存
+    if (currentTicketId) {
+      setOpenTickets(prev => prev.map(t => t.id === currentTicketId ? draft : t));
+    }
+    // 新しい伝票を読み込み
+    const ticket = openTickets.find(t => t.id === ticketId);
+    if (ticket) {
+      setDraft(ticket);
+      setCurrentTicketId(ticketId);
+    }
+  };
+
+  // 伝票削除（キャンセル）
+  const cancelTicket = (ticketId) => {
+    setOpenTickets(prev => prev.filter(t => t.id !== ticketId));
+    if (currentTicketId === ticketId) {
+      const remaining = openTickets.filter(t => t.id !== ticketId);
+      if (remaining.length > 0) {
+        switchTicket(remaining[0].id);
+      } else {
+        const newTicket = createNewTicket();
+        setDraft(newTicket);
+        setCurrentTicketId(null);
+      }
+    }
+  };
+
+  // 初回起動時に空の伝票がなければ作成
+  useEffect(() => {
+    if (openTickets.length === 0 && !currentTicketId) {
+      createTicket();
+    }
+  }, []);
 
   const menuOpts = menu.filter((m) => m.active).map((m) => ({ value: m.id, label: `${m.name} (¥${m.price})` }));
   const staffOpts = staff.filter((s) => s.active).map((s) => ({ value: s.id, label: s.name }));
@@ -465,8 +511,23 @@ function TicketEntry() {
   const removeItem = (id) => setDraft((d) => ({ ...d, items: d.items.filter((it) => it.id !== id) }));
 
   const saveTicket = () => {
-    setTickets((prev) => [{ ...draft, status: "closed" }, ...prev]);
-    setDraft({ ...base, id: uid(), checkin: nowLocal() });
+    // 伝票を精算済みにして保存
+    const closedTicket = { ...draft, status: "closed", checkout: draft.checkout || nowLocal() };
+    setTickets((prev) => [closedTicket, ...prev]);
+    
+    // 開いている伝票リストから削除
+    setOpenTickets(prev => prev.filter(t => t.id !== draft.id));
+    
+    // 残りの開いている伝票があれば最初のものに切り替え
+    const remaining = openTickets.filter(t => t.id !== draft.id);
+    if (remaining.length > 0) {
+      switchTicket(remaining[0].id);
+    } else {
+      // 新しい空の伝票を作成
+      const newTicket = createNewTicket();
+      setDraft(newTicket);
+      setCurrentTicketId(null);
+    }
   };
 
   return e(
@@ -477,7 +538,21 @@ function TicketEntry() {
       { className: "lg:col-span-3 space-y-3" },
       e(
         Card,
-        { title: "伝票 (紙伝票スタイル)" },
+        { 
+          title: e(
+            'div',
+            { className: "flex items-center justify-between w-full" },
+            e('span', null, `伝票 ${draft.table ? `(${draft.table})` : '(新規)'}`),
+            e(
+              'button',
+              { 
+                className: "px-3 py-1 rounded-xl border bg-green-500 text-white text-sm",
+                onClick: createTicket
+              },
+              "+ 新規伝票"
+            )
+          )
+        },
         e(
           'div',
           { className: "grid grid-cols-2 gap-3" },
@@ -682,8 +757,13 @@ function TicketEntry() {
             e(
               'div',
               { className: "mt-3 flex justify-end gap-2" },
-              e('button', { className: "px-4 py-2 rounded-xl border", onClick: () => setDraft(base) }, "クリア"),
-              e('button', { className: "px-4 py-2 rounded-xl border bg-black text-white", onClick: saveTicket }, "伝票確定")
+              e('button', { className: "px-4 py-2 rounded-xl border", onClick: () => {
+                if (confirm("伝票をクリアしますか？")) {
+                  const newTicket = createNewTicket();
+                  setDraft(newTicket);
+                }
+              }}, "クリア"),
+              e('button', { className: "px-4 py-2 rounded-xl border bg-black text-white", onClick: saveTicket }, "精算")
             )
           )
         )
@@ -692,9 +772,69 @@ function TicketEntry() {
     e(
       'div',
       { className: "lg:col-span-2 space-y-3" },
+      openTickets.length > 0 && e(
+        Card,
+        { title: `開いている伝票 (${openTickets.length}件)` },
+        e(
+          'div',
+          { className: "space-y-2 max-h-[300px] overflow-auto pr-1" },
+          openTickets.map((t) => {
+            const ticketTotal = calcTicket(t).total;
+            const isActive = t.id === currentTicketId;
+            return e(
+              'div',
+              { 
+                key: t.id, 
+                className: `rounded-xl border p-3 cursor-pointer transition ${isActive ? 'border-black bg-gray-50' : 'hover:bg-gray-50'}`,
+                onClick: () => switchTicket(t.id)
+              },
+              e(
+                'div',
+                { className: "flex justify-between items-start" },
+                e(
+                  'div',
+                  { className: "flex-1" },
+                  e(
+                    'div',
+                    { className: "flex items-center gap-2" },
+                    e('div', { className: "font-medium" }, t.table || "テーブル未設定"),
+                    isActive && e('span', { className: "text-xs bg-black text-white px-2 py-0.5 rounded" }, "編集中")
+                  ),
+                  e('div', { className: "text-sm text-gray-500" }, t.customer || "お客様名未設定"),
+                  e('div', { className: "text-xs text-gray-400" }, `入店: ${new Date(t.checkin).toLocaleTimeString('ja-JP', {hour: '2-digit', minute: '2-digit'})}`)
+                ),
+                e(
+                  'div',
+                  { className: "text-right" },
+                  e('div', { className: "font-semibold" }, `¥${currency(ticketTotal)}`),
+                  e(
+                    'button',
+                    { 
+                      className: "text-xs text-red-500 hover:text-red-700 mt-1",
+                      onClick: (ev) => {
+                        ev.stopPropagation();
+                        if (confirm(`テーブル${t.table || '(未設定)'}の伝票をキャンセルしますか？`)) {
+                          cancelTicket(t.id);
+                        }
+                      }
+                    },
+                    "キャンセル"
+                  )
+                )
+              ),
+              t.items.length > 0 && e(
+                'div',
+                { className: "mt-2 text-xs text-gray-600" },
+                t.items.slice(0, 3).map((i) => e('span', { key: i.id, className: "mr-2" }, `${i.name}×${i.qty}`)),
+                t.items.length > 3 && e('span', { className: "text-gray-400" }, `他${t.items.length - 3}件`)
+              )
+            );
+          })
+        )
+      ),
       e(
         Card,
-        { title: "直近の伝票" },
+        { title: "精算済み伝票" },
         e(
           'div',
           { className: "space-y-2 max-h-[600px] overflow-auto pr-1" },
