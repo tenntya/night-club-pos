@@ -1187,7 +1187,7 @@ function App() {
         e(
           'div',
           { className: "flex items-center gap-3" },
-          e('div', { className: "w-9 h-9 rounded-2xl bg-black" }),
+          e('div', { className: "logo-mark" }, "ア"),
           e(
             'div',
             null,
