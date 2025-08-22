@@ -91,13 +91,13 @@ const defaultMenu = [
 ];
 
 const defaultStaff = [
-  { id: uid(), code: "S001", name: "アヤ", role: "キャスト", active: true },
-  { id: uid(), code: "S002", name: "ミナ", role: "キャスト", active: true },
-  { id: uid(), code: "S101", name: "店長", role: "スタッフ", active: true },
+  { id: uid(), code: "S001", name: "まゆみ", role: "キャスト", active: true },
+  { id: uid(), code: "S002", name: "しずな", role: "キャスト", active: true },
+  { id: uid(), code: "S003", name: "ママ", role: "キャスト", active: true },
 ];
 
 const defaultSettings = {
-  storeName: "Club Night+",
+  storeName: "アット",
   currency: "JPY",
   receiptFooter: "ご来店ありがとうございました。",
 };
@@ -671,7 +671,7 @@ function TicketEntry() {
                       e(
                         'select',
                         {
-                          className: "border rounded-lg px-2 py-1 w-full",
+                          className: "luxury-input w-full",
                           value: it.menuId,
                           onChange: (ev) => {
                             const mId = ev.target.value;
@@ -691,7 +691,7 @@ function TicketEntry() {
                       { className: "p-2 text-right" },
                       e('input', {
                         type: "number",
-                        className: "border rounded-lg px-2 py-1 w-24 text-right",
+                        className: "luxury-input w-24 text-right",
                         value: qty,
                         min: 1,
                         onChange: (ev) => setItem(it.id, { qty: Number(ev.target.value) })
@@ -742,7 +742,7 @@ function TicketEntry() {
               e('span', null, "値引き"),
               e('input', {
                 type: "number",
-                className: "border rounded-lg px-2 py-1 w-28 text-right",
+                className: "luxury-input w-28 text-right",
                 value: draft.discount,
                 min: 0,
                 onChange: (ev) => setDraft({ ...draft, discount: Number(ev.target.value) })

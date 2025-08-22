@@ -1,30 +1,59 @@
-/* カスタムスタイル */
-body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-        'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-        sans-serif;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
+/* ラグジュアリーデザインスタイル */
+:root {
+    --primary-gold: #d4af37;
+    --secondary-gold: #f4e7d1;
+    --dark-purple: #2e1a47;
+    --deep-black: #0a0a0a;
+    --midnight: #1a1a2e;
+    --silver: #c0c0c0;
+    --champagne: #f7e7ce;
+    --burgundy: #800020;
+    --glass-white: rgba(255, 255, 255, 0.95);
+    --glass-dark: rgba(10, 10, 10, 0.85);
 }
 
-/* スクロールバーのカスタマイズ */
+body {
+    font-family: 'Noto Sans JP', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #2e1a47 100%);
+    min-height: 100vh;
+    position: relative;
+    color: var(--champagne);
+}
+
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+        radial-gradient(circle at 20% 50%, rgba(212, 175, 55, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(128, 0, 32, 0.1) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* ラグジュアリースクロールバー */
 ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+    width: 10px;
+    height: 10px;
 }
 
 ::-webkit-scrollbar-track {
-    background: #f1f1f1;
+    background: rgba(30, 30, 30, 0.5);
     border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb {
-    background: #888;
+    background: linear-gradient(135deg, var(--primary-gold), #b8941f);
     border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: #555;
+    background: linear-gradient(135deg, #e6c157, var(--primary-gold));
 }
 
 /* アニメーション */
@@ -35,6 +64,28 @@ body {
 @keyframes fadeIn {
     from { opacity: 0; }
     to { opacity: 1; }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes pulse-gold {
+    0% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.7); }
+    70% { box-shadow: 0 0 0 10px rgba(212, 175, 55, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0); }
+}
+
+@keyframes sparkle {
+    0%, 100% { opacity: 0; }
+    50% { opacity: 1; }
 }
 
 .slide-up {
@@ -52,46 +103,107 @@ body {
     }
 }
 
-/* カード効果 */
-.card-shadow {
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+/* ラグジュアリーカード効果 */
+.luxury-card {
+    background: linear-gradient(135deg, rgba(30, 30, 30, 0.9), rgba(20, 20, 20, 0.7));
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(212, 175, 55, 0.2);
+    border-radius: 20px;
+    box-shadow: 
+        0 8px 32px 0 rgba(212, 175, 55, 0.15),
+        inset 0 1px 0 0 rgba(212, 175, 55, 0.1);
+    position: relative;
+    overflow: hidden;
 }
 
-.card-shadow:hover {
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    transition: box-shadow 0.3s ease;
+.luxury-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.1), transparent);
+    animation: shimmer 3s infinite;
 }
 
-/* ボタン効果 */
-.btn-primary {
-    background-color: #000;
-    color: white;
-    transition: all 0.2s ease;
+@keyframes shimmer {
+    100% { left: 100%; }
 }
 
-.btn-primary:hover {
-    background-color: #333;
-    transform: translateY(-1px);
+/* ラグジュアリーボタン */
+.btn-gold {
+    background: linear-gradient(135deg, var(--primary-gold), #b8941f);
+    color: var(--deep-black);
+    border: none;
+    border-radius: 12px;
+    padding: 12px 24px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    box-shadow: 
+        0 4px 15px rgba(212, 175, 55, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-gold:hover {
+    background: linear-gradient(135deg, #e6c157, var(--primary-gold));
+    transform: translateY(-2px);
+    box-shadow: 
+        0 6px 20px rgba(212, 175, 55, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
 }
 
 .btn-secondary {
-    background-color: white;
-    border: 1px solid #e5e7eb;
-    transition: all 0.2s ease;
+    background: rgba(30, 30, 30, 0.6);
+    border: 1px solid rgba(212, 175, 55, 0.3);
+    color: var(--champagne);
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
 }
 
 .btn-secondary:hover {
-    background-color: #f9fafb;
-    transform: translateY(-1px);
+    background: rgba(212, 175, 55, 0.1);
+    border-color: var(--primary-gold);
+    transform: translateY(-2px);
 }
 
-/* 入力フィールドのフォーカス効果 */
+/* ラグジュアリー入力フィールド */
+.luxury-input,
+input,
+select,
+textarea {
+    background: rgba(30, 30, 30, 0.6);
+    border: 1px solid rgba(212, 175, 55, 0.3);
+    border-radius: 12px;
+    color: var(--champagne);
+    padding: 12px 16px;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
 input:focus,
 select:focus,
 textarea:focus {
     outline: none;
-    border-color: #000;
-    box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05);
+    border-color: var(--primary-gold);
+    box-shadow: 
+        0 0 0 3px rgba(212, 175, 55, 0.1),
+        0 0 20px rgba(212, 175, 55, 0.2);
+    background: rgba(30, 30, 30, 0.8);
+}
+
+input::placeholder,
+textarea::placeholder {
+    color: rgba(192, 192, 192, 0.5);
+}
+
+select option {
+    background: var(--midnight);
+    color: var(--champagne);
 }
 
 /* テーブルのホバー効果 */
@@ -99,16 +211,64 @@ textarea:focus {
     background-color: #f9fafb;
 }
 
-/* プログレスバー */
-.progress-bar {
-    background: linear-gradient(90deg, #000 0%, #333 100%);
+/* ラグジュアリープログレスバー */
+.luxury-progress {
+    background: rgba(30, 30, 30, 0.5);
+    border-radius: 10px;
+    overflow: hidden;
+    height: 8px;
+}
+
+.luxury-progress-bar {
+    background: linear-gradient(90deg, var(--primary-gold), var(--champagne));
+    height: 100%;
+    border-radius: 10px;
     transition: width 0.3s ease;
+    box-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
 }
 
 /* モーダルオーバーレイ */
 .modal-overlay {
     background-color: rgba(0, 0, 0, 0.5);
     backdrop-filter: blur(4px);
+}
+
+/* ラグジュアリー追加スタイル */
+.luxury-title {
+    background: linear-gradient(135deg, var(--primary-gold), var(--champagne));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-shadow: 0 0 30px rgba(212, 175, 55, 0.5);
+}
+
+.luxury-badge {
+    background: linear-gradient(135deg, rgba(212, 175, 55, 0.2), rgba(212, 175, 55, 0.1));
+    border: 1px solid rgba(212, 175, 55, 0.3);
+    color: var(--primary-gold);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.glow-gold {
+    box-shadow: 
+        0 0 20px rgba(212, 175, 55, 0.5),
+        0 0 40px rgba(212, 175, 55, 0.3),
+        0 0 60px rgba(212, 175, 55, 0.1);
+}
+
+.luxury-hover {
+    transition: all 0.3s ease;
+}
+
+.luxury-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(212, 175, 55, 0.2);
 }
 
 /* 印刷用スタイル */
