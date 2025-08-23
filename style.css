@@ -1,9 +1,7 @@
-/* ASTORIA - Luxury Night Club Style */
+/* ASTORIA - Night Club POS Style */
 
-/* カスタムフォント */
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700&display=swap');
 
-/* ベーススタイル */
 * {
     margin: 0;
     padding: 0;
@@ -16,7 +14,6 @@ body {
     -moz-osx-font-smoothing: grayscale;
 }
 
-/* スクロールバー */
 ::-webkit-scrollbar {
     width: 8px;
     height: 8px;
@@ -36,7 +33,6 @@ body {
     background: rgba(198, 163, 94, 0.5);
 }
 
-/* グラデーションボタン */
 .btn-gold-gradient {
     background: linear-gradient(180deg, #d7bd82, #C6A35E);
     color: #1b0f12;
@@ -50,25 +46,14 @@ body {
     box-shadow: 0 4px 12px rgba(198, 163, 94, 0.3);
 }
 
-/* パネル効果 */
 .panel-dark {
     background: rgba(27, 15, 18, 0.9);
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-/* テキストグロー */
 .text-glow-gold {
     text-shadow: 0 0 20px rgba(198, 163, 94, 0.3);
-}
-
-/* トースト通知 */
-.toast-enter {
-    animation: slideInRight 0.3s ease-out;
-}
-
-.toast-exit {
-    animation: slideOutRight 0.3s ease-out;
 }
 
 @keyframes slideInRight {
@@ -82,33 +67,9 @@ body {
     }
 }
 
-@keyframes slideOutRight {
-    from {
-        transform: translateX(0);
-        opacity: 1;
-    }
-    to {
-        transform: translateX(100%);
-        opacity: 0;
-    }
-}
-
-/* モーダル */
-.modal-backdrop {
-    animation: fadeIn 0.2s ease-out;
-}
-
-.modal-content {
-    animation: scaleIn 0.2s ease-out;
-}
-
 @keyframes fadeIn {
-    from {
-        opacity: 0;
-    }
-    to {
-        opacity: 1;
-    }
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
 
 @keyframes scaleIn {
@@ -122,41 +83,6 @@ body {
     }
 }
 
-/* テーブルスタイル */
-.receipt-table {
-    background: white;
-    color: black;
-}
-
-.receipt-table thead {
-    border-bottom: 2px solid #e5e5e5;
-}
-
-.receipt-table tbody tr {
-    border-bottom: 1px solid #f0f0f0;
-}
-
-.receipt-table tbody tr:last-child {
-    border-bottom: none;
-}
-
-/* ホバー効果 */
-.hover-lift {
-    transition: all 0.2s ease;
-}
-
-.hover-lift:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-/* タブアクティブ状態 */
-.tab-active {
-    color: #f59e0b;
-    border-bottom: 2px solid #f59e0b;
-}
-
-/* 入力フィールド */
 input:focus,
 select:focus,
 textarea:focus {
@@ -165,14 +91,6 @@ textarea:focus {
     box-shadow: 0 0 0 3px rgba(198, 163, 94, 0.1);
 }
 
-/* レスポンシブ調整 */
-@media (max-width: 1024px) {
-    .sidebar {
-        display: none;
-    }
-}
-
-/* 印刷用スタイル */
 @media print {
     body {
         background: white;
@@ -181,10 +99,5 @@ textarea:focus {
     
     .no-print {
         display: none !important;
-    }
-    
-    .panel-dark {
-        background: white;
-        border: 1px solid #ddd;
     }
 }
