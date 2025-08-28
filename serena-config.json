@@ -1,0 +1,28 @@
+{
+  "name": "ASTORIA Night Club POS",
+  "version": "1.0.0",
+  "description": "高級ナイトクラブ向けPOSシステム（SaaS MVP版）",
+  "features": {
+    "sales": true,
+    "attendance": false,
+    "payroll": true,
+    "settings": true
+  },
+  "database": {
+    "type": "IndexedDB",
+    "name": "astoria-pos",
+    "version": 2
+  },
+  "api": {
+    "enabled": false,
+    "endpoint": null
+  },
+  "sync": {
+    "enabled": false,
+    "interval": null
+  },
+  "backup": {
+    "autoBackup": false,
+    "interval": "daily"
+  }
+}

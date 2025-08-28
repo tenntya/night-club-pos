@@ -395,12 +395,12 @@
           e('div',null,
             e('div',{className:'text-xs opacity-70 text-right'},'来店者'),
             e('div',{className:'flex items-center gap-2 justify-end'},
-              e('input',{type:'text', placeholder: activeTicket?.isNewGuest? '（後で入力）':'名前を入力',
-                value:activeTicket?.customerName||'',
+              e('input',{type:'text', placeholder: activeTicket ? (activeTicket?.isNewGuest? '（後で入力）':'名前を入力') : '新規伝票を作成してください',
+                value:activeTicket?.customerName||'', disabled:!activeTicket,
                 onChange:(ev)=> setTickets(ts=> ts.map(t=> t.id===activeTicketId? {...t, customerName:ev.target.value}:t)),
-                className:'bg-transparent border-b border-white/10 focus:outline-none w-40'}),
+                className:`bg-transparent border-b border-white/10 focus:outline-none w-40 ${!activeTicket?'opacity-50 cursor-not-allowed':''}`}),
               e('label',{className:'inline-flex items-center gap-1 text-xs opacity-80'},
-                e('input',{type:'checkbox',
+                e('input',{type:'checkbox', disabled:!activeTicket,
                   checked:!!activeTicket?.isNewGuest,
                   onChange:(ev)=> setTickets(ts=> ts.map(t=> t.id===activeTicketId? {...t, isNewGuest:ev.target.checked}:t))}),
                 '新規'
@@ -433,23 +433,23 @@
           e('div',{className:'flex items-center justify-between mt-3 text-sm'},
             e('label',{className:'flex items-center gap-2'},
               e('span',{className:'opacity-80'},'来店人数'),
-              e('input',{type:'number', min:1, max:99, value: activeTicket?.guestCount||1, disabled:isPaid,
+              e('input',{type:'number', min:1, max:99, value: activeTicket?.guestCount||1, disabled:(!activeTicket || isPaid),
                 onChange:(ev)=> setTickets(ts=> ts.map(t=> t.id===activeTicketId? {...t, guestCount: clamp(Number(ev.target.value)||1,1,99)}:t)),
-                className:`w-20 bg-transparent border border-white/10 rounded-xl px-2 py-1 text-sm ${isPaid?'opacity-50 cursor-not-allowed':''}`})
+                className:`w-20 bg-transparent border border-white/10 rounded-xl px-2 py-1 text-sm ${(!activeTicket || isPaid)?'opacity-50 cursor-not-allowed':''}`})
             ),
-            (activeTicket?.guestCount||1) > 1 && e('span',null, `割るなら 1人あたり ${jpy(Math.floor(totals.total / (activeTicket?.guestCount||1)))}`)
+            (activeTicket && (activeTicket.guestCount||1) > 1) && e('span',null, `割るなら 1人あたり ${jpy(Math.floor(totals.total / (activeTicket.guestCount||1)))}`)
           )
         ),
 
         // 支払/会計
         e('div',{className:'p-4 flex items-center justify-between gap-2'},
-          e('select',{value:activeTicket?.paymentType,
-              onChange:(ev)=> setTickets(ts=> ts.map(t=> t.id===activeTicketId? {...t, paymentType:ev.target.value}:t)), disabled:isPaid,
-              className:`bg-transparent border border-white/10 rounded-xl px-3 py-2 ${isPaid?'opacity-50 cursor-not-allowed':''}`},
+          e('select',{value:activeTicket?.paymentType||'',
+              onChange:(ev)=> setTickets(ts=> ts.map(t=> t.id===activeTicketId? {...t, paymentType:ev.target.value}:t)), disabled:(!activeTicket || isPaid),
+              className:`bg-transparent border border-white/10 rounded-xl px-3 py-2 ${(!activeTicket || isPaid)?'opacity-50 cursor-not-allowed':''}`},
             settings.payments.map(p=> e('option',{key:p,className:'text-black'}, p))
           ),
           e('div',{className:'flex flex-wrap gap-2 items-center'},
-            e('button',{onClick:settleTicket, className:'px-3 py-2 rounded-xl border border-green-600/40 hover:bg-green-600/10'}, isPaid? '会計済' : '会計（確定）')
+            e('button',{onClick:settleTicket, disabled:!activeTicket, className:`px-3 py-2 rounded-xl border border-green-600/40 hover:bg-green-600/10 ${!activeTicket?'opacity-50 cursor-not-allowed':''}`}, isPaid? '会計済' : '会計（確定）')
           )
         )
       )
