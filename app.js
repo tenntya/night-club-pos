@@ -211,11 +211,7 @@
     ]);
 
     // 伝票
-    const [tickets,setTickets] = useState(()=>{
-      const first = { id: nextTicketId([]), seat:'A-1', openedAt: new Date().toLocaleString(),
-        orders:[], paymentType:'現金', customerName:'', isNewGuest:false, customerMemo:'', guestCount:1, status:'open' };
-      return [first];
-    });
+    const [tickets,setTickets] = useState(()=>[]);
     const [activeTicketId,setActiveTicketId] = useState(()=>tickets[0]?.id);
     const activeTicket = tickets.find(t=>t.id===activeTicketId);
     const isPaid = activeTicket?.status === 'paid';
