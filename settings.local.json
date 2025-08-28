@@ -1,0 +1,46 @@
+{
+  "id": "local",
+  "serviceFeeRate": 0.20,
+  "taxRate": 0.10,
+  "rounding": {
+    "level": "ticket",
+    "method": "round",
+    "unit": 100
+  },
+  "closing": {
+    "dailyCutoffHour": 5,
+    "monthly": "eom"
+  },
+  "payments": [
+    "現金",
+    "カード",
+    "月末請求",
+    "PayPay",
+    "LINE Pay"
+  ],
+  "timeRounding": {
+    "unitMinutes": 5,
+    "checkIn": "ceil",
+    "checkOut": "floor"
+  },
+  "payroll": {
+    "nightPremium": true,
+    "nightPremiumRate": 0.25,
+    "nightPremiumStart": 22,
+    "nightPremiumEnd": 5,
+    "closing": "eom",
+    "payday": 15
+  },
+  "backRules": {
+    "nomination": 0.50,
+    "accompany": 0.30,
+    "bottlePercent": 0.15
+  },
+  "storeName": "ASTORIA",
+  "storeAddress": "東京都港区六本木",
+  "storeTel": "03-XXXX-XXXX",
+  "businessHours": {
+    "open": "20:00",
+    "close": "05:00"
+  }
+}
