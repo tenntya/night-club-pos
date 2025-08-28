@@ -213,7 +213,7 @@
     // 伝票
     const [tickets,setTickets] = useState(()=>{
       const first = { id: nextTicketId([]), seat:'A-1', openedAt: new Date().toLocaleTimeString(),
-        orders:[], paymentType:'現金', customerName:'', isNewGuest:false, customerMemo:'', status:'open' };
+        orders:[], paymentType:'現金', customerName:'', isNewGuest:false, customerMemo:'', guestCount:1, status:'open' };
       return [first];
     });
     const [activeTicketId,setActiveTicketId] = useState(()=>tickets[0]?.id);
@@ -249,7 +249,7 @@
     function newTicket(){
       setTickets(ts=>{
         const nt = { id: nextTicketId(ts), seat:`A-${(ts.length%8)+1}`, openedAt:new Date().toLocaleTimeString(),
-          orders:[], paymentType:'現金', customerName:'', isNewGuest:false, customerMemo:'', status:'open' };
+          orders:[], paymentType:'現金', customerName:'', isNewGuest:false, customerMemo:'', guestCount:1, status:'open' };
         setActiveTicketId(nt.id);
         return [...ts, nt];
       });
@@ -264,21 +264,33 @@
       const rests = total - per*count;
 
       const groupId = activeTicket?.groupId || (`G-${Date.now()}`);
-      const ids = tickets.filter(t=>t.id!==activeTicketId).slice(0, count-1).map(t=>t.id);
-      // 不足分は新規伝票
-      while(ids.length<count-1){
-        const tId = nextTicketId(tickets);
-        setTickets(ts=>[...ts,{id:tId, seat:'SPLIT', openedAt:new Date().toLocaleTimeString(), orders:[], paymentType: activeTicket.paymentType, status:'open', groupId, groupSize:count }]);
-        ids.push(tId);
-      }
       const makeLine=(n)=>({ id:`split_${Date.now()}_${Math.random()}`, name:`均等割(${count}人)`, price:n, qty:1, flags:{serviceable:true,taxable:true} });
-      const updates = {};
-      updates[activeTicketId] = { ...activeTicket, orders:[makeLine(per+rests)], groupId, groupSize:count };
-      ids.forEach(id=>{
-        updates[id] = { ...(tickets.find(t=>t.id===id) || {id, seat:'SPLIT', openedAt:new Date().toLocaleTimeString(), orders:[], paymentType:activeTicket.paymentType, status:'open'}),
-          orders:[makeLine(per)], groupId, groupSize:count };
+
+      setTickets(prev => {
+        // 既存から必要な受け皿を選定
+        const existingTargets = prev.filter(t=> (t.groupId===groupId) && t.id!==activeTicketId).slice(0, count-1).map(t=>t.id);
+        const need = Math.max(0, (count-1) - existingTargets.length);
+        const added = (()=>{
+          let acc = prev.slice();
+          const list = [];
+          for(let i=0;i<need;i++){
+            const id = nextTicketId(acc);
+            list.push({ id, seat:'SPLIT', openedAt:new Date().toLocaleTimeString(), orders:[], paymentType: activeTicket.paymentType, status:'open', groupId, groupSize:count });
+            acc = [...acc, {id}];
+          }
+          return list;
+        })();
+        const ids = [...existingTargets, ...added.map(t=>t.id)];
+
+        const base = [...prev, ...added];
+        const updates = {};
+        updates[activeTicketId] = { ...base.find(t=>t.id===activeTicketId), orders:[makeLine(per+rests)], groupId, groupSize:count };
+        ids.forEach(id=>{
+          const src = base.find(t=>t.id===id) || {id, seat:'SPLIT', openedAt:new Date().toLocaleTimeString(), orders:[], paymentType:activeTicket.paymentType, status:'open'};
+          updates[id] = { ...src, orders:[makeLine(per)], groupId, groupSize:count };
+        });
+        return base.map(t=> updates[t.id]? updates[t.id] : t);
       });
-      setTickets(ts=> ts.map(t=> updates[t.id]? updates[t.id] : t));
     }
 
     // 分割：明細移動（直前行を別伝票へ：簡易）
@@ -306,7 +318,7 @@
       const rows=[];
       tickets.forEach(t=>{
         const c = calcTicket(t.orders||[], settings);
-        rows.push({ id:t.id, seat:t.seat, openedAt:t.openedAt, customer:t.customerName||'', payment:t.paymentType, status:t.status||'open', groupId:t.groupId||'',
+        rows.push({ id:t.id, seat:t.seat, openedAt:t.openedAt, customer:t.customerName||'', payment:t.paymentType, status:t.status||'open', guestCount: t.guestCount||1,
           subtotal:c.subtotal, service:c.serviceFee, tax:c.tax, total:c.total });
       });
       if(!rows.length) return alert('エクスポート対象がありません');
@@ -321,12 +333,7 @@
     }
 
     // グループ合算会計（割勘された全伝票をまとめて会計）
-    function settleGroup(){
-      if(!activeTicket?.groupId) { settleTicket(); return; }
-      const gid = activeTicket.groupId;
-      setTickets(ts=> ts.map(t=> t.groupId===gid ? ({...t, status:'paid', closedAt:new Date().toLocaleString()}) : t));
-      alert('グループ全体を会計しました');
-    }
+    // グループ会計は廃止（人数割の目安表示のみ）
 
     // UI
     return e('div',{className:"grid grid-cols-1 md:grid-cols-12 gap-6"},
@@ -345,7 +352,6 @@
               e('span',null,
                 t.id,
                 e('span',{className:'opacity-60'},` (${t.seat})`),
-                t.groupId && e('span',{className:'ml-2 text-[10px] px-2 py-0.5 rounded bg-blue-500/20 border border-blue-500/30'},`割勘${t.groupSize||''}`),
                 t.status==='paid' && e('span',{className:'ml-2 text-[10px] px-2 py-0.5 rounded bg-green-600/30 border border-green-600/40'},'会計済')
               ),
               e('span',{className:'text-xs opacity-70'}, t.customerName || (t.isNewGuest? '新規様（後入力）':'—'))
@@ -418,10 +424,19 @@
           e('div',{className:'flex items-center justify-between text-sm opacity-80'}, e('span',null,'小計'), e('span',null,jpy(totals.subtotal))),
           e('div',{className:'flex items-center justify-between text-sm opacity-80'}, e('span',null,'サービス料'), e('span',null,jpy(totals.serviceFee))),
           e('div',{className:'flex items-center justify-between text-sm opacity-80'}, e('span',null,'消費税'), e('span',null,jpy(totals.tax))),
-          e('div',{className:'flex items-center justify-between mt-3 text-lg font-bold'}, e('span',null,'合計'), e('span',{style:{color:color.gold}}, jpy(totals.total)))
+          e('div',{className:'flex items-center justify-between mt-3 text-lg font-bold'}, e('span',null,'合計'), e('span',{style:{color:color.gold}}, jpy(totals.total))),
+          e('div',{className:'flex items-center justify-between mt-3 text-sm'},
+            e('label',{className:'flex items-center gap-2'},
+              e('span',{className:'opacity-80'},'来店人数'),
+              e('input',{type:'number', min:1, max:99, value: activeTicket?.guestCount||1, disabled:isPaid,
+                onChange:(ev)=> setTickets(ts=> ts.map(t=> t.id===activeTicketId? {...t, guestCount: clamp(Number(ev.target.value)||1,1,99)}:t)),
+                className:`w-20 bg-transparent border border-white/10 rounded-xl px-2 py-1 text-sm ${isPaid?'opacity-50 cursor-not-allowed':''}`})
+            ),
+            (activeTicket?.guestCount||1) > 1 && e('span',null, `割るなら 1人あたり ${jpy(Math.floor(totals.total / (activeTicket?.guestCount||1)))}`)
+          )
         ),
 
-        // 支払/分割
+        // 支払/会計
         e('div',{className:'p-4 flex items-center justify-between gap-2'},
           e('select',{value:activeTicket?.paymentType,
               onChange:(ev)=> setTickets(ts=> ts.map(t=> t.id===activeTicketId? {...t, paymentType:ev.target.value}:t)), disabled:isPaid,
@@ -429,20 +444,7 @@
             settings.payments.map(p=> e('option',{key:p,className:'text-black'}, p))
           ),
           e('div',{className:'flex flex-wrap gap-2 items-center'},
-            e('button',{onClick:()=>equalSplit(2), disabled:isPaid, className:`px-3 py-2 rounded-xl border border-white/10 ${isPaid?'opacity-50 cursor-not-allowed':'hover:bg-white/5'}`}, '2人割'),
-            e('button',{onClick:()=>equalSplit(3), disabled:isPaid, className:`px-3 py-2 rounded-xl border border-white/10 ${isPaid?'opacity-50 cursor-not-allowed':'hover:bg-white/5'}`}, '3人割'),
-            e('div',{className:'flex items-center gap-2'},
-              e('input',{type:'number', min:2, max:20, value:splitCount, onChange:(ev)=> setSplitCount(clamp(Number(ev.target.value)||2,2,20)), disabled:isPaid,
-                className:`w-20 bg-transparent border border-white/10 rounded-xl px-2 py-2 text-sm ${isPaid?'opacity-50 cursor-not-allowed':''}`}),
-              e('button',{onClick:()=>equalSplit(splitCount), disabled:isPaid, className:`px-3 py-2 rounded-xl border border-white/10 ${isPaid?'opacity-50 cursor-not-allowed':'hover:bg-white/5'}`}, '人数割')
-            ),
-            e('button',{onClick:()=>moveLastLineToOther(), disabled:isPaid, className:`px-3 py-2 rounded-xl border border-white/10 ${isPaid?'opacity-50 cursor-not-allowed':'hover:bg-white/5'}`}, '直前行を別伝票へ'),
-            activeTicket?.groupId
-              ? e('div',{className:'flex items-center gap-2'},
-                  e('button',{onClick:settleTicket, className:'px-3 py-2 rounded-xl border border-green-600/40 hover:bg-green-600/10'}, isPaid? '会計済' : 'この伝票を会計'),
-                  e('button',{onClick:settleGroup, className:'px-3 py-2 rounded-xl border border-green-600/40 hover:bg-green-600/10'}, 'グループ合計で会計')
-                )
-              : e('button',{onClick:settleTicket, className:'px-3 py-2 rounded-xl border border-green-600/40 hover:bg-green-600/10'}, isPaid? '会計済' : '会計（確定）')
+            e('button',{onClick:settleTicket, className:'px-3 py-2 rounded-xl border border-green-600/40 hover:bg-green-600/10'}, isPaid? '会計済' : '会計（確定）')
           )
         )
       )
