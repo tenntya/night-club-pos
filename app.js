@@ -212,7 +212,7 @@
 
     // 伝票
     const [tickets,setTickets] = useState(()=>{
-      const first = { id: nextTicketId([]), seat:'A-1', openedAt: new Date().toLocaleTimeString(),
+      const first = { id: nextTicketId([]), seat:'A-1', openedAt: new Date().toLocaleString(),
         orders:[], paymentType:'現金', customerName:'', isNewGuest:false, customerMemo:'', guestCount:1, status:'open' };
       return [first];
     });
@@ -226,6 +226,13 @@
 
     // 永続化（簡易）
     useEffect(()=>{ tickets.forEach(t=> idbPut('tickets', {...t})); },[tickets]);
+
+    // 来店時刻の自動登録（欠落している既存伝票に対して）
+    useEffect(()=>{
+      if(activeTicket && !activeTicket.openedAt){
+        setTickets(ts=> ts.map(t=> t.id===activeTicket.id? {...t, openedAt: new Date().toLocaleString()} : t));
+      }
+    }, [activeTicketId]);
 
     // 操作
     function addOrder(item){
@@ -248,7 +255,7 @@
     }
     function newTicket(){
       setTickets(ts=>{
-        const nt = { id: nextTicketId(ts), seat:`A-${(ts.length%8)+1}`, openedAt:new Date().toLocaleTimeString(),
+        const nt = { id: nextTicketId(ts), seat:`A-${(ts.length%8)+1}`, openedAt:new Date().toLocaleString(),
           orders:[], paymentType:'現金', customerName:'', isNewGuest:false, customerMemo:'', guestCount:1, status:'open' };
         setActiveTicketId(nt.id);
         return [...ts, nt];
@@ -385,7 +392,9 @@
         e('div',{className:'p-4 flex items-center justify-between'},
           e('div',null,
             e('div',{className:'text-xs opacity-70'},'伝票ID'),
-            e('div',{className:'font-semibold'}, activeTicket?.id || '—')
+            e('div',{className:'font-semibold'}, activeTicket?.id || '—'),
+            e('div',{className:'mt-2 text-xs opacity-70'},'来店時刻'),
+            e('div',{className:'text-sm'}, activeTicket?.openedAt || '—')
           ),
           e('div',null,
             e('div',{className:'text-xs opacity-70 text-right'},'来店者'),
