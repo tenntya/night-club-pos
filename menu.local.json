@@ -1,0 +1,8 @@
+[
+  { "id": "set_regular_60", "category": "set", "name": "レギュラー60", "price": 6000, "flags": {"serviceable": true, "taxable": true} },
+  { "id": "set_vip_60",     "category": "set", "name": "VIP60",         "price": 10000, "flags": {"serviceable": true, "taxable": true} },
+  { "id": "drink_beer",     "category": "drink", "name": "生ビール",       "price": 800,  "flags": {"serviceable": true, "taxable": true} },
+  { "id": "drink_shochu",   "category": "drink", "name": "芋焼酎(ロック)", "price": 900,  "flags": {"serviceable": true, "taxable": true} },
+  { "id": "bottle_x",       "category": "bottle", "name": "ボトルX",       "price": 15000, "flags": {"serviceable": true, "taxable": true, "backTarget": true} },
+  { "id": "nomination_one", "category": "nomination", "name": "本指名",   "price": 3000,  "flags": {"serviceable": true, "taxable": true, "backTarget": true} }
+]

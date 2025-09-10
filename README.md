@@ -28,6 +28,25 @@ npx http-server
 ```
 その後、ブラウザで http://localhost:8000 にアクセス
 
+## ディレクトリ構造
+```
+.
+├─ index.html            # 単一ページエントリ（CDN React/Tailwind）
+├─ app.js                # メインアプリ（IndexedDB/設定ロード対応）
+├─ style.css             # 追加スタイル
+├─ settings.local.json   # 店舗設定（税率・サービス料・支払方法等）
+├─ menu.local.json       # メニュー定義（外部化）
+├─ staff.local.json      # スタッフ初期データ（外部化）
+├─ serena-config.json    # DB名・バージョン等の設定
+├─ mcp-integration.json  # DBストア一覧などのメタ情報
+├─ .env.example          # 参考用の環境設定例
+├─ README.md             # 本ファイル
+└─ nightclub-saas/       # Next.js サンプル（別実装・検証用）
+    ├─ package.json
+    ├─ next.config.ts
+    └─ src/ ...
+```
+
 ## GitHub Pagesでの公開方法
 
 ### 1. GitHubにプッシュ
@@ -53,12 +72,9 @@ gh repo create night-club-pos --public --push --source=.
 `https://[your-username].github.io/night-club-pos/`
 
 ## データの保存場所
-すべてのデータはブラウザのLocalStorageに保存されます：
-- メニューデータ: `nightpos.menu`
-- スタッフデータ: `nightpos.staff`
-- 伝票データ: `nightpos.tickets`
-- 勤怠データ: `nightpos.attendance`
-- 設定データ: `nightpos.settings`
+現在はブラウザのIndexedDBを使用します（LocalStorageではありません）。
+- DB名/バージョン: `serena-config.json` または `mcp-integration.json` で設定可能
+- ストア: `settings`, `menu`, `tickets`, `guests`, `staff`, `shifts`, `payrollRules`
 
 ## 技術スタック
 - React 18 (CDN版)

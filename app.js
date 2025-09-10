@@ -33,11 +33,41 @@
   // =============================
   // IndexedDB (very small wrapper)
   // =============================
-  const DB_NAME = 'astoria-pos';
-  const DB_VERSION = 2;
-  const STORES = ['settings','menu','tickets','guests','staff','shifts','payrollRules'];
+  let DB_NAME = 'astoria-pos';
+  let DB_VERSION = 2;
+  let STORES = ['settings','menu','tickets','guests','staff','shifts','payrollRules'];
 
-  function openDB(){
+  // Load optional config files to avoid hardcoding DB params/stores
+  let __configReady;
+  async function loadDBConfig(){
+    try {
+      // Prefer mcp-integration.json for stores; serena-config.json for db name/version
+      const [mcpResp, serenaResp] = await Promise.allSettled([
+        fetch('mcp-integration.json', {cache:'no-store'}),
+        fetch('serena-config.json', {cache:'no-store'})
+      ]);
+      if (serenaResp.status === 'fulfilled' && serenaResp.value.ok){
+        const s = await serenaResp.value.json();
+        if (s?.database?.name) DB_NAME = s.database.name;
+        if (Number.isInteger(s?.database?.version)) DB_VERSION = s.database.version;
+      }
+      if (mcpResp.status === 'fulfilled' && mcpResp.value.ok){
+        const m = await mcpResp.value.json();
+        if (Array.isArray(m?.database?.stores) && m.database.stores.length){
+          STORES = m.database.stores;
+        }
+        if (m?.database?.name) DB_NAME = m.database.name;
+        if (Number.isInteger(m?.database?.version)) DB_VERSION = m.database.version;
+      }
+    } catch(_) { /* keep defaults */ }
+  }
+  function ensureConfig(){
+    if (!__configReady) __configReady = loadDBConfig();
+    return __configReady;
+  }
+
+  async function openDB(){
+    await ensureConfig();
     return new Promise((resolve,reject)=>{
       const req = indexedDB.open(DB_NAME, DB_VERSION);
       req.onupgradeneeded = (ev)=>{
@@ -72,6 +102,16 @@
       rq.onerror   = ()=>rej(rq.error);
     });
   }
+  async function idbClear(store){
+    const db = await openDB();
+    return new Promise((res,rej)=>{
+      const tx = db.transaction(store,'readwrite');
+      const s  = tx.objectStore(store);
+      const rq = s.clear();
+      rq.onsuccess = ()=>res(true);
+      rq.onerror   = ()=>rej(rq.error);
+    });
+  }
 
   // =============================
   // Settings (with defaults)
@@ -100,6 +140,29 @@
       await idbPut('settings', DefaultSettings);
       return DefaultSettings;
     }
+  }
+
+  // Menu loader (avoid hardcoded menu)
+  const DefaultMenu = [
+    { id:"set_regular_60", category:"set", name:"レギュラー60", price:6000, flags:{serviceable:true,taxable:true} },
+    { id:"drink_beer",     category:"drink", name:"生ビール",     price:800,  flags:{serviceable:true,taxable:true} },
+    { id:"drink_shochu",   category:"drink", name:"芋焼酎(ロック)",price:900,  flags:{serviceable:true,taxable:true} },
+    { id:"bottle_x",       category:"bottle",name:"ボトルX",       price:15000,flags:{serviceable:true,taxable:true, backTarget:true} },
+    { id:"nomination_one", category:"nomination", name:"本指名",   price:3000, flags:{serviceable:true,taxable:true, backTarget:true} }
+  ];
+  async function loadInitialMenu(){
+    const rows = await idbGetAll('menu');
+    if(rows && rows.length && Array.isArray(rows[0]?.items)) return rows[0].items;
+    try {
+      const resp = await fetch('menu.local.json',{cache:'no-store'});
+      if (resp.ok){
+        const items = await resp.json();
+        await idbPut('menu', {id:'default', items});
+        return items;
+      }
+    } catch(_) { /* fallback below */ }
+    await idbPut('menu', {id:'default', items: DefaultMenu});
+    return DefaultMenu;
   }
 
   // =============================
@@ -201,14 +264,9 @@
   // SalesPOS（会計：既存POS UIをこちらに集約）
   // =============================
   function SalesPOS({settings,setSettings,color}){
-    // 初期メニュー（必要に応じて差し替え）
-    const [menu] = useState([
-      { id:"set_regular_60", category:"set", name:"レギュラー60", price:6000, flags:{serviceable:true,taxable:true} },
-      { id:"drink_beer",     category:"drink", name:"生ビール",     price:800,  flags:{serviceable:true,taxable:true} },
-      { id:"drink_shochu",   category:"drink", name:"芋焼酎(ロック)",price:900,  flags:{serviceable:true,taxable:true} },
-      { id:"bottle_x",       category:"bottle",name:"ボトルX",       price:15000,flags:{serviceable:true,taxable:true, backTarget:true} },
-      { id:"nomination_one", category:"nomination", name:"本指名",   price:3000, flags:{serviceable:true,taxable:true, backTarget:true} }
-    ]);
+    // メニュー（IndexedDB or menu.local.jsonからロード）
+    const [menu, setMenu] = useState([]);
+    useEffect(()=>{ loadInitialMenu().then(setMenu); },[]);
 
     // 伝票
     const [tickets,setTickets] = useState(()=>[]);
@@ -252,7 +310,7 @@
     function newTicket(){
       setTickets(ts=>{
         const nt = { id: nextTicketId(ts), seat:`A-${(ts.length%8)+1}`, openedAt:new Date().toLocaleString(),
-          orders:[], paymentType:'現金', customerName:'', isNewGuest:false, customerMemo:'', guestCount:1, status:'open' };
+          orders:[], paymentType: (settings?.payments?.[0] || '現金'), customerName:'', isNewGuest:false, customerMemo:'', guestCount:1, status:'open' };
         setActiveTicketId(nt.id);
         return [...ts, nt];
       });
@@ -470,14 +528,31 @@
   // Payroll（給与管理：MVPの簡易集計 + CSV）
   // =============================
   function PayrollTab({settings,color}){
-    const [staff, setStaff] = useState([
-      { id:'s1', name:'山田', role:'キャスト', hourly:1200 },
-      { id:'s2', name:'佐藤', role:'レジ',    hourly:1100 }
-    ]);
-    const [work, setWork] = useState({
-      s1:{ hours:0, bonus:0, bottle:0 },
-      s2:{ hours:0, bonus:0, bottle:0 }
-    });
+    const [staff, setStaff] = useState([]);
+    const [work, setWork] = useState({});
+
+    // スタッフ情報をDB or staff.local.jsonからロード
+    useEffect(()=>{
+      (async()=>{
+        let rows = await idbGetAll('staff');
+        if(!rows || rows.length===0){
+          try{
+            const resp = await fetch('staff.local.json',{cache:'no-store'});
+            if(resp.ok){ rows = await resp.json(); }
+          }catch(_){ rows = []; }
+          // シードを保存
+          if (rows && rows.length){
+            await idbClear('staff');
+            for(const r of rows){ if(r?.id) await idbPut('staff', r); }
+          }
+        }
+        setStaff(rows||[]);
+        // 既存勤怠入力の初期値（時給変更時に影響しないよう別state）
+        const initialWork = {};
+        (rows||[]).forEach(r=>{ initialWork[r.id] = {hours:0, bonus:0, bottle:0}; });
+        setWork(initialWork);
+      })();
+    },[]);
 
     const rows = useMemo(()=>{
       return staff.map(s=>{
@@ -492,10 +567,12 @@
       e('div',{className:'flex items-center justify-between'},
         e('div',{className:'text-lg font-semibold'},'給与管理'),
         e('div',{className:'flex gap-2'},
-          e('button',{onClick:()=>{
+          e('button',{onClick:async()=>{
               const id='s'+Date.now();
-              setStaff(arr=>[...arr, { id, name:'新規', role:'', hourly:1000 }]);
+              const rec = { id, name:'新規', role:'', hourly:1000 };
+              setStaff(arr=>[...arr, rec]);
               setWork(w=>({...w, [id]:{hours:0, bonus:0, bottle:0}}));
+              await idbPut('staff', rec);
             }, className:'px-3 py-2 rounded-xl border border-white/10 hover:bg-white/5 text-sm'},'＋ スタッフ'),
           e('button',{onClick:()=> download(`payroll_${todayKey()}.csv`, toCSV(rows)), className:'px-3 py-2 rounded-xl border border-white/10 hover:bg-white/5 text-sm'},'給与CSV')
         )
@@ -505,11 +582,23 @@
       e('div',{className:'grid grid-cols-1 gap-2'},
         staff.map(s=> e('div',{key:s.id, className:'grid grid-cols-12 gap-2 items-center px-3 py-2 rounded-xl bg-white/5 border border-white/10'},
           e('input',{className:'col-span-3 bg-transparent border-b border-white/10', value:s.name,
-            onChange:(ev)=> setStaff(arr=> arr.map(x=> x.id===s.id? {...x, name:ev.target.value}:x))}),
+            onChange:async(ev)=>{
+              const updated = {...s, name:ev.target.value};
+              setStaff(arr=> arr.map(x=> x.id===s.id? updated:x));
+              await idbPut('staff', updated);
+            }}),
           e('input',{className:'col-span-2 bg-transparent border-b border-white/10', value:s.role, placeholder:'役割',
-            onChange:(ev)=> setStaff(arr=> arr.map(x=> x.id===s.id? {...x, role:ev.target.value}:x))}),
+            onChange:async(ev)=>{
+              const updated = {...s, role:ev.target.value};
+              setStaff(arr=> arr.map(x=> x.id===s.id? updated:x));
+              await idbPut('staff', updated);
+            }}),
           e('input',{type:'number', className:'col-span-2 bg-transparent border-b border-white/10', value:s.hourly,
-            onChange:(ev)=> setStaff(arr=> arr.map(x=> x.id===s.id? {...x, hourly:Number(ev.target.value)||0}:x))}),
+            onChange:async(ev)=>{
+              const updated = {...s, hourly:Number(ev.target.value)||0};
+              setStaff(arr=> arr.map(x=> x.id===s.id? updated:x));
+              await idbPut('staff', updated);
+            }}),
           e('input',{type:'number', className:'col-span-1 bg-transparent border-b border-white/10', value:(work[s.id]?.hours)||0, placeholder:'時間',
             onChange:(ev)=> setWork(w=>({...w, [s.id]:{...(w[s.id]||{}), hours:Number(ev.target.value)||0}}))}),
           e('input',{type:'number', className:'col-span-2 bg-transparent border-b border-white/10', value:(work[s.id]?.bonus)||0, placeholder:'ボーナス',
